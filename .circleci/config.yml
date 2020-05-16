@@ -33,7 +33,7 @@ jobs:
           name: Run Flake8
           command: |
             . venv/bin/activate
-            cd src && flake8
+            cd seller_stats && flake8
 
       - persist_to_workspace:
           root: .
