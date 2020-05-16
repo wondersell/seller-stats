@@ -4,11 +4,10 @@
 import os
 import tempfile
 from urllib.parse import quote, urlencode, urlunparse
-from envparse import env
+
 import boto3
-
 import pandas as pd
-
+from envparse import env
 
 # инициализируем S3
 s3 = boto3.client('s3')

@@ -1,6 +1,7 @@
-import pandas as pd
-import numpy as np
 from datetime import datetime
+
+import numpy as np
+import pandas as pd
 
 
 class CategoryStats:
@@ -52,6 +53,7 @@ class CategoryStats:
             'purchases',
             'rating',
             'reviews',
+            'first_review',
         )
 
         for field in required_fields:

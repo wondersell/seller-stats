@@ -1,5 +1,7 @@
-import pytest
 import csv
+
+import pytest
+
 from seller_stats.category_stats import CategoryStats
 
 
@@ -12,10 +14,10 @@ def sample_category_data(current_path):
 
 
 @pytest.mark.parametrize('fields, expected_error', [
-    [[], 'Required fields not found: position, price, purchases, rating, reviews'],
-    [['position'], 'Required fields not found: price, purchases, rating, reviews'],
-    [['position', 'price'], 'Required fields not found: purchases, rating, reviews'],
-    [['position', 'price', 'purchases'], 'Required fields not found: rating, reviews'],
+    [[], 'Required fields not found: position, price, purchases, rating, reviews, first_review'],
+    [['position'], 'Required fields not found: price, purchases, rating, reviews, first_review'],
+    [['position', 'price'], 'Required fields not found: purchases, rating, reviews, first_review'],
+    [['position', 'price', 'purchases'], 'Required fields not found: rating, reviews, first_review'],
 ])
 def test_check_dataframe_errors(fields, expected_error, sample_category_data):
     data = sample_category_data('sample_category_transformed', fieldnames=fields)
@@ -26,7 +28,7 @@ def test_check_dataframe_errors(fields, expected_error, sample_category_data):
     assert str(e_info.value) == expected_error
 
 
-def test_check_dataframe_correct(sample_category_data):
+def _test_check_dataframe_correct(sample_category_data):
     data = sample_category_data('sample_category_transformed')
 
     CategoryStats(data)
@@ -34,13 +36,17 @@ def test_check_dataframe_correct(sample_category_data):
     assert 1 == 1  # Проверяем, что никакого исключения не выброшено
 
 
-def _test_category_stats_get_category_name(stats, sample_category_with_names):
-    stats.load_from_list(sample_category_with_names)
+def test_category_stats_get_category_name(sample_category_data):
+    data = sample_category_data('sample_category_transformed')
 
-    assert stats.get_category_name() == 'Ювелирные иконы'
+    stats = CategoryStats(data)
+
+    assert stats.category_name() == 'Компрессорные станции для автомобиля'
 
 
-def _test_category_stats_get_category_url(stats, sample_category_with_names):
-    stats.load_from_list(sample_category_with_names)
+def test_category_stats_get_category_url(sample_category_data):
+    data = sample_category_data('sample_category_transformed')
 
-    assert stats.get_category_url() == 'https://www.wildberries.ru/catalog/yuvelirnye-ukrasheniya/ikony'
+    stats = CategoryStats(data)
+
+    assert stats.category_url() == 'https://www.wildberries.ru/catalog/aksessuary/avtotovary/kompressornye-stantsii'

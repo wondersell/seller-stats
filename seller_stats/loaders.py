@@ -1,5 +1,5 @@
-from scrapinghub import ScrapinghubClient
 from envparse import env
+from scrapinghub import ScrapinghubClient
 
 
 def load_scrapinghub(job_id: str, client: ScrapinghubClient = None, keys: dict = None) -> list:

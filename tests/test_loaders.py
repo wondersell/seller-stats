@@ -1,8 +1,9 @@
-import pytest
 import json
 
-from seller_stats.loaders import load_scrapinghub, transform_keys
+import pytest
 from scrapinghub import ScrapinghubClient
+
+from seller_stats.loaders import load_scrapinghub, transform_keys
 
 
 @pytest.fixture
@@ -28,13 +29,12 @@ def scrapinghub_client():
     return ScrapinghubClient('dummy')
 
 
-def test_load_scrapinghub(set_scrapinghub_requests_mock, scrapinghub_client):
-    pass
-    #set_scrapinghub_requests_mock(job_id='123/1/1234')
+def _test_load_scrapinghub(set_scrapinghub_requests_mock, scrapinghub_client):
+    set_scrapinghub_requests_mock(job_id='123/1/1234')
 
-    #items = load_scrapinghub(scrapinghub_client, '123/1/1234')
+    items = load_scrapinghub(scrapinghub_client, '123/1/1234')
 
-    #assert items == []
+    assert items == []
 
 
 def test_transform_keys():
