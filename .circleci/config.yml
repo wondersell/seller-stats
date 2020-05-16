@@ -13,7 +13,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "src/requirements.txt" }}
+            - v1-dependencies-{{ checksum "requirements.txt" }}
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
@@ -22,12 +22,12 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            pip install -r src/requirements.txt
+            pip install -r requirements.txt
 
       - save_cache:
           paths:
             - ./venv
-          key: v1-dependencies-{{ checksum "src/requirements.txt" }}
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
 
       - run:
           name: Run Flake8
@@ -50,7 +50,7 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            pytest --cov-report=xml --cov=src tests/ --junitxml=test-results/pytest/results.xml
+            pytest --cov-report=xml --cov=seller_stats tests/ --junitxml=test-results/pytest/results.xml
             codecov
 
       - store_test_results:
