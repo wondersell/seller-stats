@@ -75,8 +75,7 @@ class CategoryStats:
         df_reviews = df_reviews[
             df_reviews['first_review'].str.len() != 3]  # почему-то определение NaT как NaN не работает
         df_reviews.loc[:, 'first_review'] = pd.to_datetime(df_reviews.loc[:, 'first_review'], utc=True)
-        df_reviews.loc[:, 'days_since_first_review'] = (
-                pd.to_datetime(datetime.now(), utc=True) - df_reviews.loc[:, 'first_review']).dt.days
+        df_reviews.loc[:, 'days_since_first_review'] = (pd.to_datetime(datetime.now(), utc=True) - df_reviews.loc[:, 'first_review']).dt.days
 
         # отсеиваем те товары, где первый отзыв был сделан менее 30 дней назад
         df_reviews = df_reviews[df_reviews['days_since_first_review'] > 30]

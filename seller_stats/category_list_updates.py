@@ -1,6 +1,4 @@
-###
-### На данный момент фича заморожена
-###
+# На данный момент фича заморожена
 import os
 import tempfile
 from urllib.parse import quote, urlencode, urlunparse
@@ -52,10 +50,8 @@ class CategoryListUpdates:
         self.diff_unique = self.fill_types_with(pd.DataFrame())
         self.s3_files = self.fill_types_with(None)
 
-    def load_from_api(self):
+    def load_from_api(self, client, project):
         """Export last two scraped WB categories for comparison."""
-        client, project = init_scrapinghub()
-
         jobs_summary = project.jobs.iter(has_tag=['daily_categories'], state='finished', count=2)
 
         counter = 0

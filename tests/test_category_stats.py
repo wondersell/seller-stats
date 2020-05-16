@@ -8,7 +8,7 @@ from seller_stats.category_stats import CategoryStats
 @pytest.fixture()
 def sample_category_data(current_path):
     def _sample_category_data(mock='sample_category_transformed', fieldnames=None):
-        return [row for row in csv.DictReader(open(current_path + f'/mocks/{mock}.csv'), fieldnames=fieldnames)]
+        return list(csv.DictReader(open(current_path + f'/mocks/{mock}.csv'), fieldnames=fieldnames))
 
     return _sample_category_data
 

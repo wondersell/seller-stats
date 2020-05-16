@@ -1,12 +1,8 @@
-from unittest.mock import patch
-
 import pandas as pd
 import pytest
 from botocore.stub import ANY
 from envparse import env
 from faker import Faker
-from scrapinghub import ScrapinghubClient
-from scrapinghub.client.projects import Project
 
 from seller_stats.category_list_updates import CategoryListUpdates
 
@@ -45,17 +41,15 @@ def comparator():
 
 @pytest.fixture()
 def comparator_random():
-    comparator = CategoryListUpdates()
     lists = make_categories(10, 20, 15)
-    comparator.load_from_list(lists[0], lists[1])
+    comparator = CategoryListUpdates(lists[0], lists[1])
     return comparator
 
 
 @pytest.fixture()
 def comparator_empty():
-    comparator = CategoryListUpdates()
     lists = make_categories(10, 10, 0)
-    comparator.load_from_list(lists[0], lists[1])
+    comparator = CategoryListUpdates(lists[0], lists[1])
     return comparator
 
 
@@ -102,7 +96,7 @@ def test_get_categories_unique_count_raises_exception(comparator_random):
 
 
 def test_all_fields_present(comparator_random):
-    expected_columns = WbCategoryComparator._columns.sort()
+    expected_columns = CategoryListUpdates._columns.sort()
     comparator_random.calculate_diff()
 
     assert list(comparator_random.diff['added'].columns).sort() == expected_columns
@@ -217,15 +211,3 @@ def test_export_file_prefix(comparator_random, s3_stub, _type, expected_prefix):
     comparator_random.dump_to_s3_file(_type=_type)
 
     assert expected_prefix in comparator_random.get_s3_file_name(_type=_type)
-
-
-@patch('src.tasks.get_cat_update_users')
-@patch('src.scrapinghub_helper.WbCategoryComparator.load_from_api')
-@patch('src.tasks.send_wb_category_update_message.delay')
-def test_calculate_wb_category_diff_task_empty_categories(mocked_update_message_delay, mocked_comparator, mocked_get_cat_update_users, comparator_empty):
-    mocked_comparator.return_value = comparator_empty
-    mocked_get_cat_update_users.return_value = ['1423']
-
-    calculate_wb_category_diff()
-
-    mocked_update_message_delay.assert_called_with('1423', 'За последние сутки на Wildberries не добавилось категорий', None)

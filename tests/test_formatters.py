@@ -45,7 +45,7 @@ def test_format_quantity(number, expected):
 
 @pytest.mark.parametrize('number, postfix, highlighter, expected', [
     [11574747, 'руб.', '`', '`11 574 747` руб.'],
-    [11574747.88, '', 'эээ',  'эээ11 574 747,88эээ'],
+    [11574747.88, '', 'эээ', 'эээ11 574 747,88эээ'],
     [-12345678.99, 'шт.', '', '-12 345 678,99 шт.'],
 ])
 def test_format_add_postfix(number, postfix, highlighter, expected):

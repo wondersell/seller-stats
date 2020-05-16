@@ -6,7 +6,7 @@ def load_scrapinghub(job_id: str, client: ScrapinghubClient = None, keys: dict =
     if client is None:
         client = ScrapinghubClient(env('SCRAPINGHUB_API_KEY'))
 
-    data = [item for item in client.get_job(job_id).items.iter()]
+    data = list(client.get_job(job_id).items.iter())
 
     if keys is not None:
         data = transform_keys(data, keys)
