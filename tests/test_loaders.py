@@ -1,49 +1,112 @@
-import json
+from os import environ
 
 import pytest
 from scrapinghub import ScrapinghubClient
 
-from seller_stats.loaders import load_scrapinghub, transform_keys
-
-
-@pytest.fixture
-def scrapinghub_api_response():
-    def _scrapinghub_api_response(mock):
-        with open(f'tests/mocks/{mock}.json') as f:
-            json_body = f.read()
-            return json.loads(json_body)
-
-    return _scrapinghub_api_response
+from seller_stats.loaders import CsvLoader, ScrapinghubLoader
+from seller_stats.transformers import WildsearchCrawlerWildberriesTransformer
 
 
 @pytest.fixture()
-def set_scrapinghub_requests_mock(requests_mock, scrapinghub_api_response):
+def sample_category_data_raw(current_path):
+    return open(current_path + '/mocks/scrapinghub_items_wb_raw.jl', 'rb').read()
+
+
+@pytest.fixture()
+def set_scrapinghub_requests_mock(requests_mock, sample_category_data_raw):
     def _set_scrapinghub_requests_mock(pending_count=1, running_count=1, job_id='123/1/2'):
-        requests_mock.get(f'https://storage.scrapinghub.com/items/{job_id}', json=scrapinghub_api_response('scrapinghub_items'))
+        requests_mock.get('https://storage.scrapinghub.com/ids/414324/spider/wb', text='1')
+        requests_mock.get('https://storage.scrapinghub.com/jobq/414324/count?state=pending&spider=wb', text=f'{pending_count}')
+        requests_mock.get('https://storage.scrapinghub.com/jobq/414324/count?state=running&spider=wb', text=f'{running_count}')
+        requests_mock.post('https://app.scrapinghub.com/api/run.json', json={'status': 'ok', 'jobid': f'{job_id}'})
+        requests_mock.get(f'https://storage.scrapinghub.com/items/{job_id}?meta=_key', content=sample_category_data_raw, headers={'Content-Type': 'application/x-jsonlines; charset=UTF-8'})
 
     return _set_scrapinghub_requests_mock
 
 
 @pytest.fixture()
 def scrapinghub_client():
-    return ScrapinghubClient('dummy')
+    return ScrapinghubClient('dummy_scrapinghub_key')
 
 
-def _test_load_scrapinghub(set_scrapinghub_requests_mock, scrapinghub_client):
-    set_scrapinghub_requests_mock(job_id='123/1/1234')
-
-    items = load_scrapinghub(scrapinghub_client, '123/1/1234')
-
-    assert items == []
+@pytest.fixture()
+def sample_csv_file_path(current_path):
+    return current_path + '/mocks/sample_wb_category_correct_raw.csv'
 
 
-def test_transform_keys():
-    data = [
-        {'old_key_one': 1, 'old_key_two': 2, 'old_key_three': 3},
-        {'old_key_one': 11, 'old_key_four': 44},
-    ]
+def test_simple_scrapinghub_loader_init_throws_exception():
+    with pytest.raises(Exception) as e_info:
+        ScrapinghubLoader(job_id='123/4/5')
 
-    data_transformed = transform_keys(data, {'old_key_one': 'one', 'old_key_two': 'two', 'old_key_four': 'four'})
+    assert 'Pass scrapinghub client or set SCRAPINGHUB_API_KEY env' in str(e_info)
 
-    assert data_transformed[0] == {'one': 1, 'two': 2, 'old_key_three': 3}
-    assert data_transformed[1] == {'one': 11, 'four': 44}
+
+def test_simple_scrapinghub_loader_init_with_env_var():
+    environ['SCRAPINGHUB_API_KEY'] = 'dummy_scrapinghub_key'
+    loader = ScrapinghubLoader(job_id='123/4/5')
+
+    assert type(loader.client) is ScrapinghubClient
+
+
+def test_custom_scrapinghub_loader_init(scrapinghub_client):
+    loader = ScrapinghubLoader(job_id='123/4/5', client=scrapinghub_client)
+
+    assert type(loader.client) is ScrapinghubClient
+
+
+def test_simple_scrapinghub_loader_load(set_scrapinghub_requests_mock, scrapinghub_client):
+    set_scrapinghub_requests_mock(job_id='414324/1/735')
+    loader = ScrapinghubLoader(job_id='414324/1/735', client=scrapinghub_client)
+
+    data = loader.load()
+
+    assert len(data) == 67
+    assert 'product_name' in data[0].keys()
+    assert 'wb_id' in data[0].keys()
+
+
+def test_scrapinghub_loader_with_transformer(set_scrapinghub_requests_mock, scrapinghub_client):
+    set_scrapinghub_requests_mock(job_id='414324/1/735')
+
+    transformer = WildsearchCrawlerWildberriesTransformer()
+    loader = ScrapinghubLoader(job_id='414324/1/735', client=scrapinghub_client, transformer=transformer)
+
+    data = loader.load()
+
+    assert type(loader.transformer) is WildsearchCrawlerWildberriesTransformer
+
+    assert len(data) == 67
+    assert 'product_name' not in data[0].keys()
+    assert 'wb_id' not in data[0].keys()
+    assert 'name' in data[0].keys()
+    assert 'id' in data[0].keys()
+
+
+def test_simple_csv_loader_init(sample_csv_file_path):
+    loader = CsvLoader(file_path=sample_csv_file_path)
+
+    assert loader.file_path == sample_csv_file_path
+
+
+def test_simple_csv_loader_load(sample_csv_file_path):
+    loader = CsvLoader(file_path=sample_csv_file_path)
+
+    data = loader.load()
+
+    assert len(data) == 256
+    assert 'product_name' in data[0].keys()
+    assert 'wb_id' in data[0].keys()
+
+
+def test_csv_loader_with_transformer(sample_csv_file_path):
+    transformer = WildsearchCrawlerWildberriesTransformer()
+
+    loader = CsvLoader(file_path=sample_csv_file_path, transformer=transformer)
+
+    data = loader.load()
+
+    assert len(data) == 256
+    assert 'product_name' not in data[0].keys()
+    assert 'wb_id' not in data[0].keys()
+    assert 'name' in data[0].keys()
+    assert 'id' in data[0].keys()
