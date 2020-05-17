@@ -1,7 +1,10 @@
+import logging
 from datetime import datetime
 
 import numpy as np
 import pandas as pd
+
+logger = logging.getLogger('CategoryStats')
 
 
 class CategoryStats:
@@ -58,10 +61,11 @@ class CategoryStats:
 
         for field in required_fields:
             if field not in self.df.columns.values:
+                self.df[field] = None
                 not_found.append(field)
 
         if len(not_found) > 0:
-            raise ValueError(f'Required fields not found: ' + ', '.join(not_found))
+            logger.warning(f'Required fields not found: ' + ', '.join(not_found))
 
     def calculate_basic_stats(self):
         self.df['sku'] = 1

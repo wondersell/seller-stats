@@ -19,21 +19,23 @@ def sample_category_data(current_path):
     [['position', 'price'], 'Required fields not found: purchases, rating, reviews, first_review'],
     [['position', 'price', 'purchases'], 'Required fields not found: rating, reviews, first_review'],
 ])
-def test_check_dataframe_errors(fields, expected_error, sample_category_data):
+def test_check_dataframe_errors(fields, expected_error, sample_category_data, caplog):
     data = sample_category_data('sample_category_transformed', fieldnames=fields)
 
-    with pytest.raises(ValueError) as e_info:
-        CategoryStats(data)
+    CategoryStats(data)
 
-    assert str(e_info.value) == expected_error
+    for record in caplog.records:
+        assert record.levelname == "WARNING"
+
+    assert expected_error in caplog.text
 
 
-def _test_check_dataframe_correct(sample_category_data):
+def test_check_dataframe_correct(sample_category_data, caplog):
     data = sample_category_data('sample_category_transformed')
 
     CategoryStats(data)
 
-    assert 1 == 1  # Проверяем, что никакого исключения не выброшено
+    assert len(caplog.records) == 0
 
 
 def test_category_stats_get_category_name(sample_category_data):
