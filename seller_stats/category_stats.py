@@ -12,7 +12,7 @@ class CategoryStats:
         pd.set_option('display.precision', 2)
         pd.set_option('chop_threshold', 0.01)
         pd.options.display.float_format = '{:.2f}'.format
-        
+
         self.df = pd.DataFrame(data=data)
         self._check_dataframe()
         self._clean_dataframe()
@@ -21,7 +21,7 @@ class CategoryStats:
         # делаем пустые значения действительно пустыми
         for field in ('position', 'price', 'purchases', 'rating', 'reviews'):
             self.df[field].replace('', np.nan, inplace=True)
-        
+
         # если уж найдем пустые значения, то изгоним их каленым железом (вместе со всей строкой, да)
         self.df.drop(self.df[self.df['price'] == ''].index, inplace=True)  # это для случая загрузки из словаря
         self.df.drop(self.df[self.df['purchases'] == ''].index, inplace=True)  # это тоже для словаря
@@ -120,7 +120,7 @@ class CategoryStats:
     def get_distribution_thresholds(self):
         if 'turnover_month' not in list(self.df.columns) or 'purchases_month' not in list(self.df.columns):
             self.calculate_monthly_stats()
-            
+
         thresholds = list(range(0, min([5501, int(self.df.price.max()) + 1]), 500))
         labels = []
 

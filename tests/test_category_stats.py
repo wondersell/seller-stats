@@ -95,15 +95,7 @@ def test_top_goods_more(sample_category_stats):
 
 
 def test_price_distribution(sample_category_stats):
-    #print(sample_category_stats.df.loc[:, ['price', 'turnover']])
-
     distribution = sample_category_stats.price_distribution()
-
-    #print(sample_category_stats.df.loc[:, ['price', 'turnover', 'purchases_month', 'turnover_month', 'sku']])
-    #print(sample_category_stats.df.turnover_month.sum())
-
-    print(distribution)
-    #print(sample_category_stats.df.loc[0, ])
 
     assert len(distribution.index) == 11
     assert 'bin' in list(distribution.columns)
