@@ -31,7 +31,7 @@ def scrapinghub_client():
 
 @pytest.fixture()
 def sample_csv_file_path(current_path):
-    return current_path + '/mocks/sample_wb_category_correct_raw.csv'
+    return current_path + '/mocks/scrapinghub_items_wb_raw.csv'
 
 
 def test_simple_scrapinghub_loader_init_throws_exception():
@@ -60,7 +60,7 @@ def test_simple_scrapinghub_loader_load(set_scrapinghub_requests_mock, scrapingh
 
     data = loader.load()
 
-    assert len(data) == 67
+    assert len(data) == 440
     assert 'product_name' in data[0].keys()
     assert 'wb_id' in data[0].keys()
 
@@ -75,7 +75,7 @@ def test_scrapinghub_loader_with_transformer(set_scrapinghub_requests_mock, scra
 
     assert type(loader.transformer) is WildsearchCrawlerWildberriesTransformer
 
-    assert len(data) == 67
+    assert len(data) == 440
     assert 'product_name' not in data[0].keys()
     assert 'wb_id' not in data[0].keys()
     assert 'name' in data[0].keys()
@@ -93,7 +93,7 @@ def test_simple_csv_loader_load(sample_csv_file_path):
 
     data = loader.load()
 
-    assert len(data) == 256
+    assert len(data) == 440
     assert 'product_name' in data[0].keys()
     assert 'wb_id' in data[0].keys()
 
@@ -105,7 +105,7 @@ def test_csv_loader_with_transformer(sample_csv_file_path):
 
     data = loader.load()
 
-    assert len(data) == 256
+    assert len(data) == 440
     assert 'product_name' not in data[0].keys()
     assert 'wb_id' not in data[0].keys()
     assert 'name' in data[0].keys()

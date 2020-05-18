@@ -9,11 +9,19 @@ logger = logging.getLogger('CategoryStats')
 
 class CategoryStats:
     def __init__(self, data):
+        pd.set_option('display.precision', 2)
+        pd.set_option('chop_threshold', 0.01)
+        pd.options.display.float_format = '{:.2f}'.format
+        
         self.df = pd.DataFrame(data=data)
         self._check_dataframe()
         self._clean_dataframe()
 
     def _clean_dataframe(self):
+        # делаем пустые значения действительно пустыми
+        for field in ('position', 'price', 'purchases', 'rating', 'reviews'):
+            self.df[field].replace('', np.nan, inplace=True)
+        
         # если уж найдем пустые значения, то изгоним их каленым железом (вместе со всей строкой, да)
         self.df.drop(self.df[self.df['price'] == ''].index, inplace=True)  # это для случая загрузки из словаря
         self.df.drop(self.df[self.df['purchases'] == ''].index, inplace=True)  # это тоже для словаря
@@ -30,7 +38,7 @@ class CategoryStats:
             inplace=True,
         )
 
-        self.df['rating'].replace(0, np.nan, inplace=True)
+        self.df['reviews'].replace(0, np.nan, inplace=True)
 
         self.df = self.df.astype({
             'position': int,
@@ -103,19 +111,33 @@ class CategoryStats:
 
         return df_slice.groupby(by='id').sum().sort_values(by=['turnover'], ascending=False).head(count)
 
-    def sales_distribution(self, groups=None):
-        distribution = []
-        groups = groups or [0, 10, 100, 1000]
+    def price_distribution(self):
+        thresholds, labels = self.get_distribution_thresholds()
 
-        for threshold in groups:
-            distribution.append({
-                'group': threshold,
-                'goods': None,
-                'purchases': len(self.df[self.df['purchases'] > threshold]) / len(self.df.index),
-                'turnover': None,
-            })
+        self.df['bin'] = pd.cut(self.df.price, thresholds, labels=labels, include_lowest=True)
+        return self.df.loc[:, ['bin', 'sku', 'turnover_month', 'purchases_month']].groupby(by='bin').sum().reset_index()
 
-        return pd.DataFrame(distribution)
+    def get_distribution_thresholds(self):
+        if 'turnover_month' not in list(self.df.columns) or 'purchases_month' not in list(self.df.columns):
+            self.calculate_monthly_stats()
+            
+        thresholds = list(range(0, min([5501, int(self.df.price.max()) + 1]), 500))
+        labels = []
+
+        if len(thresholds) == 2:
+            labels = [thresholds[0] - thresholds[1]]
+        else:
+            for i in range(len(thresholds)):
+                if i == 0 and len(thresholds) > 0:
+                    labels.append(f'<{thresholds[i + 1]}')
+
+                if 0 < i < (len(thresholds) - 2):
+                    labels.append(f'{thresholds[i]}-{thresholds[i + 1]}')
+
+                if i == (len(thresholds) - 2):
+                    labels.append(f'>{thresholds[i]}')
+
+        return thresholds, labels
 
     def category_name(self):
         return self.df.loc[0, 'category_name'] if 'category_name' in self.df.columns else 'Неизвестная категория'
