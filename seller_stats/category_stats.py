@@ -9,14 +9,9 @@ logger = logging.getLogger('CategoryStats')
 
 class CategoryStats:
     def __init__(self, data):
-        self.df = pd.DataFrame()
-        self.load_data(data)
+        self.df = pd.DataFrame(data=data)
         self._check_dataframe()
         self._clean_dataframe()
-
-    def load_data(self, data):
-        self.df = pd.DataFrame(data)
-        return self
 
     def _clean_dataframe(self):
         # если уж найдем пустые значения, то изгоним их каленым железом (вместе со всей строкой, да)
@@ -51,6 +46,7 @@ class CategoryStats:
         not_found = []
 
         required_fields = (
+            'id',
             'position',
             'price',
             'purchases',
@@ -74,6 +70,9 @@ class CategoryStats:
         return self
 
     def calculate_monthly_stats(self):
+        if 'turnover' not in list(self.df.columns):
+            self.calculate_basic_stats()
+
         # сделаем отдельный датафрейм с отзывами
         df_reviews = self.df.loc[:, ['id', 'first_review', 'turnover', 'purchases']]
         df_reviews = df_reviews[
@@ -96,17 +95,27 @@ class CategoryStats:
 
         return self
 
-    def top_goods(self, count):
+    def top_goods(self, count=5):
+        if 'turnover' not in list(self.df.columns):
+            self.calculate_basic_stats()
+
         df_slice = self.df.loc[:, ['id', 'turnover']]
 
         return df_slice.groupby(by='id').sum().sort_values(by=['turnover'], ascending=False).head(count)
 
     def sales_distribution(self, groups=None):
         distribution = []
-        groups = groups or (0, 10, 100, 1000)
+        groups = groups or [0, 10, 100, 1000]
 
         for threshold in groups:
-            distribution[threshold] = len(self.df[self.df['purchases'] > threshold]) / len(self.df.index)
+            distribution.append({
+                'group': threshold,
+                'goods': None,
+                'purchases': len(self.df[self.df['purchases'] > threshold]) / len(self.df.index),
+                'turnover': None,
+            })
+
+        return pd.DataFrame(distribution)
 
     def category_name(self):
         return self.df.loc[0, 'category_name'] if 'category_name' in self.df.columns else 'Неизвестная категория'
