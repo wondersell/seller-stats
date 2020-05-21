@@ -1,5 +1,4 @@
 import logging
-
 from abc import abstractmethod
 from csv import DictReader
 
@@ -7,7 +6,6 @@ from envparse import ConfigurationError, env
 from scrapinghub import ScrapinghubClient
 
 from .transformers import EmptyTransformer, Transformer
-
 
 logger = logging.getLogger(__name__)
 
