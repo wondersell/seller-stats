@@ -4,7 +4,7 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
-logger = logging.getLogger('CategoryStats')
+logger = logging.getLogger(__name__)
 
 
 class CategoryStats:
@@ -75,6 +75,8 @@ class CategoryStats:
         self.df['sku'] = 1
         self.df['turnover'] = self.df['price'] * self.df['purchases']
 
+        logger.info('Basic stats calculated')
+
         return self
 
     def calculate_monthly_stats(self):
@@ -101,6 +103,8 @@ class CategoryStats:
             df_reviews.loc[:, ['id', 'days_since_first_review', 'turnover_month', 'purchases_month']],
             on='id', how='left')
 
+        logger.info('Monthly stats calculated')
+
         return self
 
     def top_goods(self, count=5):
@@ -109,12 +113,17 @@ class CategoryStats:
 
         df_slice = self.df.loc[:, ['id', 'turnover']]
 
+        logger.info('Top goods calculated')
+
         return df_slice.groupby(by='id').sum().sort_values(by=['turnover'], ascending=False).head(count)
 
     def price_distribution(self):
         thresholds, labels = self.get_distribution_thresholds()
 
         self.df['bin'] = pd.cut(self.df.price, thresholds, labels=labels, include_lowest=True)
+
+        logger.info('Price distributions calculated')
+
         return self.df.loc[:, ['bin', 'sku', 'turnover_month', 'purchases_month']].groupby(by='bin').sum().reset_index()
 
     def get_distribution_thresholds(self):

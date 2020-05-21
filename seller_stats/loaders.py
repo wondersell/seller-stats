@@ -1,3 +1,5 @@
+import logging
+
 from abc import abstractmethod
 from csv import DictReader
 
@@ -5,6 +7,9 @@ from envparse import ConfigurationError, env
 from scrapinghub import ScrapinghubClient
 
 from .transformers import EmptyTransformer, Transformer
+
+
+logger = logging.getLogger(__name__)
 
 
 class Loader:
@@ -25,10 +30,16 @@ class ScrapinghubLoader(Loader):
         except ConfigurationError:
             raise ConfigurationError('Scrapinghub init failed. Pass scrapinghub client or set SCRAPINGHUB_API_KEY env.')
 
+        logger.info(f'Loading items from scrapinghub job {job_id}')
+
         super().__init__(transformer=transformer)
 
     def load(self):
-        return [self.transformer.transform_item(item) for item in self.client.get_job(self.job_id).items.iter()]
+        items = [self.transformer.transform_item(item) for item in self.client.get_job(self.job_id).items.iter()]
+
+        logger.info(f'Loaded {len(items)} items from scrapinghub')
+
+        return items
 
 
 class CsvLoader(Loader):
@@ -36,7 +47,13 @@ class CsvLoader(Loader):
         self.file_path = file_path
         self.reader = reader or DictReader(open(self.file_path, 'r'))
 
+        logger.info(f'Loading items from CSV file {file_path}')
+
         super().__init__(transformer=transformer)
 
     def load(self):
-        return [self.transformer.transform_item(item) for item in self.reader]
+        items = [self.transformer.transform_item(item) for item in self.reader]
+
+        logger.info(f'Loaded {len(items)} items from CSV')
+
+        return items
