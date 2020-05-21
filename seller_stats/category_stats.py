@@ -69,7 +69,7 @@ class CategoryStats:
                 not_found.append(field)
 
         if len(not_found) > 0:
-            logger.warning(f'Required fields not found: ' + ', '.join(not_found))
+            logger.warning('Required fields not found: ' + ', '.join(not_found))
 
     def calculate_basic_stats(self):
         self.df['sku'] = 1
