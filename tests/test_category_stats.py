@@ -1,6 +1,7 @@
 import csv
 
 import pytest
+from freezegun import freeze_time
 
 from seller_stats.category_stats import CategoryStats
 
@@ -68,6 +69,7 @@ def test_calculate_basic_stats(sample_category_stats):
     assert stats.df.loc[0, ].turnover == 71200
 
 
+@freeze_time('2020-06-01')
 def test_calculate_monthly_stats(sample_category_stats):
     stats = sample_category_stats.calculate_monthly_stats()
 
@@ -75,9 +77,9 @@ def test_calculate_monthly_stats(sample_category_stats):
     assert 'turnover_month' in list(stats.df.columns)
     assert 'purchases_month' in list(stats.df.columns)
 
-    assert stats.df.loc[0, ].turnover_month == 28105.263157894737
-    assert stats.df.loc[0, ].purchases_month == 78.94736842105263
-    assert stats.df.loc[0, ].days_since_first_review == 76.0
+    assert stats.df.loc[0, ].turnover_month == 24000
+    assert stats.df.loc[0, ].purchases_month == 67.41573033707866
+    assert stats.df.loc[0, ].days_since_first_review == 89.0
 
 
 def test_top_goods(sample_category_stats):
