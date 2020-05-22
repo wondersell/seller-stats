@@ -24,9 +24,9 @@ class ScrapinghubLoader(Loader):
         self.job_id = job_id
 
         try:
-            self.client = client or ScrapinghubClient(env('SCRAPINGHUB_API_KEY'))
+            self.client = client or ScrapinghubClient(env('SH_APIKEY'))
         except ConfigurationError:
-            raise ConfigurationError('Scrapinghub init failed. Pass scrapinghub client or set SCRAPINGHUB_API_KEY env.')
+            raise ConfigurationError('Scrapinghub init failed. Pass scrapinghub client or set SH_APIKEY env.')
 
         logger.info(f'Loading items from scrapinghub job {job_id}')
 
