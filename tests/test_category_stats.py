@@ -37,7 +37,7 @@ def test_check_dataframe_errors(fields, expected_error, sample_category_data, ca
     assert expected_error in caplog.text
 
 
-def test_check_dataframe_correct(sample_category_data, caplog):
+def test_check_dataframe_correct_wb(sample_category_data, caplog):
     data = sample_category_data('scrapinghub_items_wb_transformed')
 
     CategoryStats(data)
@@ -45,7 +45,7 @@ def test_check_dataframe_correct(sample_category_data, caplog):
     assert len(caplog.records) == 0
 
 
-def test_category_stats_get_category_name(sample_category_data):
+def test_category_stats_get_category_name_wb(sample_category_data):
     data = sample_category_data('scrapinghub_items_wb_transformed')
 
     stats = CategoryStats(data)
@@ -53,7 +53,7 @@ def test_category_stats_get_category_name(sample_category_data):
     assert stats.category_name() == 'Подставки кухонные'
 
 
-def test_category_stats_get_category_url(sample_category_data):
+def test_category_stats_get_category_url_wb(sample_category_data):
     data = sample_category_data('scrapinghub_items_wb_transformed')
 
     stats = CategoryStats(data)
