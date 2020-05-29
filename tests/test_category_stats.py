@@ -4,12 +4,40 @@ import pytest
 from freezegun import freeze_time
 
 from seller_stats.category_stats import CategoryStats
+from seller_stats.loaders import ScrapinghubLoader
+from seller_stats.transformers import WildsearchCrawlerOzonTransformer, WildsearchCrawlerWildberriesTransformer
 
 
 @pytest.fixture()
 def sample_category_data(current_path):
     def _sample_category_data(mock='scrapinghub_items_wb_transformed', fieldnames=None):
         return list(csv.DictReader(open(current_path + f'/mocks/{mock}.csv'), fieldnames=fieldnames))
+
+    return _sample_category_data
+
+
+@pytest.fixture()
+def sample_wb_category_data(set_scrapinghub_requests_mock, current_path, scrapinghub_client):
+    def _sample_category_data(mock='scrapinghub_items_wb_raw'):
+        set_scrapinghub_requests_mock(job_id='414324/1/735', load_content=open(current_path + f'/mocks/{mock}.jl', 'rb').read())
+
+        transformer = WildsearchCrawlerWildberriesTransformer()
+        loader = ScrapinghubLoader(job_id='414324/1/735', client=scrapinghub_client, transformer=transformer)
+
+        return loader.load()
+
+    return _sample_category_data
+
+
+@pytest.fixture()
+def sample_ozon_category_data(set_scrapinghub_requests_mock, current_path, scrapinghub_client):
+    def _sample_category_data(mock='scrapinghub_items_ozon_raw'):
+        set_scrapinghub_requests_mock(job_id='414324/1/735', load_content=open(current_path + f'/mocks/{mock}.jl', 'rb').read())
+
+        transformer = WildsearchCrawlerOzonTransformer()
+        loader = ScrapinghubLoader(job_id='414324/1/735', client=scrapinghub_client, transformer=transformer)
+
+        return loader.load()
 
     return _sample_category_data
 
@@ -37,24 +65,24 @@ def test_check_dataframe_errors(fields, expected_error, sample_category_data, ca
     assert expected_error in caplog.text
 
 
-def test_check_dataframe_correct_wb(sample_category_data, caplog):
-    data = sample_category_data('scrapinghub_items_wb_transformed')
+def test_check_dataframe_correct_wb(sample_wb_category_data, caplog):
+    data = sample_wb_category_data()
 
     CategoryStats(data)
 
     assert len(caplog.records) == 0
 
 
-def test_category_stats_get_category_name_wb(sample_category_data):
-    data = sample_category_data('scrapinghub_items_wb_transformed')
+def test_category_stats_get_category_name_wb(sample_wb_category_data):
+    data = sample_wb_category_data()
 
     stats = CategoryStats(data)
 
     assert stats.category_name() == 'Подставки кухонные'
 
 
-def test_category_stats_get_category_url_wb(sample_category_data):
-    data = sample_category_data('scrapinghub_items_wb_transformed')
+def test_category_stats_get_category_url_wb(sample_wb_category_data):
+    data = sample_wb_category_data()
 
     stats = CategoryStats(data)
 
