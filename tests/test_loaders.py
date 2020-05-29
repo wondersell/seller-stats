@@ -3,8 +3,8 @@ from os import environ
 import pytest
 from scrapinghub import ScrapinghubClient
 
-from seller_stats.loaders import CsvLoader, ScrapinghubLoader
-from seller_stats.transformers import WildsearchCrawlerWildberriesTransformer
+from seller_stats.utils.loaders import CsvLoader, ScrapinghubLoader
+from seller_stats.utils.transformers import WildsearchCrawlerWildberriesTransformer
 
 
 @pytest.fixture()

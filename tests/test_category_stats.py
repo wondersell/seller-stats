@@ -4,8 +4,8 @@ import pytest
 from freezegun import freeze_time
 
 from seller_stats.category_stats import CategoryStats
-from seller_stats.loaders import ScrapinghubLoader
-from seller_stats.transformers import WildsearchCrawlerOzonTransformer, WildsearchCrawlerWildberriesTransformer
+from seller_stats.utils.loaders import ScrapinghubLoader
+from seller_stats.utils.transformers import WildsearchCrawlerOzonTransformer, WildsearchCrawlerWildberriesTransformer
 
 
 @pytest.fixture()

@@ -1,7 +1,7 @@
 import pytest
 
-from seller_stats.transformers import (EmptyTransformer, Transformer, WildsearchCrawlerOzonTransformer,
-                                       WildsearchCrawlerWildberriesTransformer)
+from seller_stats.utils.transformers import (EmptyTransformer, Transformer, WildsearchCrawlerOzonTransformer,
+                                             WildsearchCrawlerWildberriesTransformer)
 
 
 @pytest.fixture()
@@ -27,7 +27,7 @@ def sample_abstract_item():
 
 @pytest.fixture()
 def sample_wb_item():
-    return {"product_name":"Капсулы для стирки Всё-в-1 Альпийская свежесть, 12 шт.","wb_reviews_count":"55","wb_price":"224","wb_rating":"5","wb_id":"4730307","parse_date":"2020-05-12 17:13:04.279799","marketplace":"wildberries","product_url":"https://www.wildberries.ru/catalog/4730307/detail.aspx","wb_brand_name":"Tide","wb_brand_country":"Соединенные Штаты","wb_manufacture_country":"Франция","wb_category_url":"https://www.wildberries.ru/catalog/0/search.aspx","wb_category_name":"капсулы для стирки","wb_category_position":1,"image_urls":["//img1.wbstatic.net/big/new/4730000/4730307-1.jpg","//img1.wbstatic.net/big/new/4730000/4730307-2.jpg"],"wb_purchases_count":"3500","wb_first_review_date":"2018-09-21T15:29:22.1531331+03:00","_type":"WildsearchCrawlerItemWildberries"}  # noqa
+    return {"product_name":"Капсулы для стирки Всё-в-1 Аflake8льпийская свежесть, 12 шт.","wb_reviews_count":"55","wb_price":"224","wb_rating":"5","wb_id":"4730307","parse_date":"2020-05-12 17:13:04.279799","marketplace":"wildberries","product_url":"https://www.wildberries.ru/catalog/4730307/detail.aspx","wb_brand_name":"Tide","wb_brand_country":"Соединенные Штаты","wb_manufacture_country":"Франция","wb_category_url":"https://www.wildberries.ru/catalog/0/search.aspx","wb_category_name":"капсулы для стирки","wb_category_position":1,"image_urls":["//img1.wbstatic.net/big/new/4730000/4730307-1.jpg","//img1.wbstatic.net/big/new/4730000/4730307-2.jpg"],"wb_purchases_count":"3500","wb_first_review_date":"2018-09-21T15:29:22.1531331+03:00","_type":"WildsearchCrawlerItemWildberries"}  # noqa
 
 
 @pytest.fixture()
