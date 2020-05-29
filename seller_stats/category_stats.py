@@ -1,75 +1,42 @@
 import logging
 from datetime import datetime
 
-import numpy as np
 import pandas as pd
+
+from .base import DataSet
+from .utils.stats import get_distribution_thresholds
 
 logger = logging.getLogger(__name__)
 
 
-class CategoryStats:
+class CategoryStats(DataSet):
+    fields_required = (
+        'id',
+        'position',
+        'price',
+        'purchases',
+        'rating',
+        'reviews',
+        'first_review',
+    )
+
+    fields_force_from_empty_string_to_nan = ('position', 'price', 'purchases', 'rating', 'reviews')
+    fields_force_zeros_to_nan = ['reviews']
+    fields_drop_empty_strings = ('price', 'purchases')
+    fields_drop_na = ('position', 'price', 'purchases', 'rating', 'reviews')
+    fields_force_types = {
+        'position': int,
+        'price': float,
+        'purchases': int,
+        'rating': float,
+        'reviews': int,
+    }
+
     def __init__(self, data):
-        pd.set_option('display.precision', 2)
-        pd.set_option('chop_threshold', 0.01)
-        pd.options.display.float_format = '{:.2f}'.format
+        super().__init__(data=data)
 
-        self.df = pd.DataFrame(data=data)
-        self._check_dataframe()
-        self._clean_dataframe()
-
-    def _clean_dataframe(self):
-        # делаем пустые значения действительно пустыми
-        for field in ('position', 'price', 'purchases', 'rating', 'reviews'):
-            self.df[field].replace('', np.nan, inplace=True)
-
-        # если уж найдем пустые значения, то изгоним их каленым железом (вместе со всей строкой, да)
-        self.df.drop(self.df[self.df['price'] == ''].index, inplace=True)  # это для случая загрузки из словаря
-        self.df.drop(self.df[self.df['purchases'] == ''].index, inplace=True)  # это тоже для словаря
-
-        # а это, если загрузили по API
-        self.df.dropna(
-            subset=[
-                'position',
-                'price',
-                'purchases',
-                'rating',
-                'reviews',
-            ],
-            inplace=True,
-        )
-
-        self.df['reviews'].replace(0, np.nan, inplace=True)
-
-        self.df = self.df.astype({
-            'position': int,
-            'price': float,
-            'purchases': int,
-            'rating': float,
-            'reviews': int,
-        })
-
-        return self
-
-    def _check_dataframe(self):
-        not_found = []
-
-        required_fields = (
-            'id',
-            'position',
-            'price',
-            'purchases',
-            'rating',
-            'reviews',
-            'first_review',
-        )
-
-        for field in required_fields:
-            if field not in self.df.columns.values:
-                self.df[field] = None
-                not_found.append(field)
-
-        if len(not_found) > 0:
-            logger.warning('Required fields not found: ' + ', '.join(not_found))
+        self.calculate_basic_stats()
+        self.calculate_monthly_stats()
 
     def calculate_basic_stats(self):
         self.df['sku'] = 1
@@ -117,39 +84,31 @@ class CategoryStats:
 
         return df_slice.groupby(by='id').sum().sort_values(by=['turnover'], ascending=False).head(count)
 
-    def price_distribution(self):
-        thresholds, labels = self.get_distribution_thresholds()
-
-        self.df['bin'] = pd.cut(self.df.price, thresholds, labels=labels, include_lowest=True)
-
-        logger.info('Price distributions calculated')
-
-        return self.df.loc[:, ['bin', 'sku', 'turnover_month', 'purchases_month']].groupby(by='bin').sum().reset_index()
-
-    def get_distribution_thresholds(self):
-        if 'turnover_month' not in list(self.df.columns) or 'purchases_month' not in list(self.df.columns):
-            self.calculate_monthly_stats()
-
-        thresholds = list(range(0, min([5501, int(self.df.price.max()) + 1]), 500))
-        labels = []
-
-        if len(thresholds) == 2:
-            labels = [thresholds[0] - thresholds[1]]
-        else:
-            for i in range(len(thresholds)):
-                if i == 0 and len(thresholds) > 0:
-                    labels.append(f'<{thresholds[i + 1]}')
-
-                if 0 < i < (len(thresholds) - 2):
-                    labels.append(f'{thresholds[i]}-{thresholds[i + 1]}')
-
-                if i == (len(thresholds) - 2):
-                    labels.append(f'>{thresholds[i]}')
-
-        return thresholds, labels
-
     def category_name(self):
         return self.df.loc[0, 'category_name'] if 'category_name' in self.df.columns else 'Неизвестная категория'
 
     def category_url(self):
         return self.df.loc[0, 'category_url'] if 'category_url' in self.df.columns else '–'
+
+
+class CategorySliceStats(DataSet):
+    pass
+
+
+class SalesDistributions(DataSet):
+    fields_required = ('bin', 'sku', 'turnover_month', 'purchases_month')
+
+
+def calc_sales_distribution(stats: CategoryStats):
+    thresholds, labels = get_distribution_thresholds(stats.df.price)
+
+    stats.df['bin'] = pd.cut(stats.df.price, thresholds, labels=labels, include_lowest=True)
+    data = stats.df.loc[:, ['bin', 'sku', 'turnover_month', 'purchases_month']].groupby(by='bin').sum().reset_index()
+
+    logger.info('Price distributions calculated')
+
+    return SalesDistributions(data=data)
+
+
+def calc_hhi(stats: CategoryStats):
+    pass

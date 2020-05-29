@@ -1,9 +1,10 @@
 import csv
+import datetime
 
 import pytest
 from freezegun import freeze_time
 
-from seller_stats.category_stats import CategoryStats
+from seller_stats.category_stats import CategoryStats, calc_sales_distribution
 from seller_stats.utils.loaders import ScrapinghubLoader
 from seller_stats.utils.transformers import WildsearchCrawlerOzonTransformer, WildsearchCrawlerWildberriesTransformer
 
@@ -99,15 +100,16 @@ def test_calculate_basic_stats(sample_category_stats):
 
 @freeze_time('2020-06-01')
 def test_calculate_monthly_stats(sample_category_stats):
-    stats = sample_category_stats.calculate_monthly_stats()
+    stats = sample_category_stats
 
     assert 'days_since_first_review' in list(stats.df.columns)
     assert 'turnover_month' in list(stats.df.columns)
     assert 'purchases_month' in list(stats.df.columns)
 
-    assert stats.df.loc[0, ].turnover_month == 24000
-    assert stats.df.loc[0, ].purchases_month == 67.41573033707866
-    assert stats.df.loc[0, ].days_since_first_review == 89.0
+    assert datetime.datetime.now() == datetime.datetime(2020, 6, 1)
+    assert stats.df.loc[0, ].turnover_month == 24551.724137931036
+    assert stats.df.loc[0, ].purchases_month == 68.9655172413793
+    assert stats.df.loc[0, ].days_since_first_review == 87.0
 
 
 def test_top_goods(sample_category_stats):
@@ -125,10 +127,10 @@ def test_top_goods_more(sample_category_stats):
 
 
 def test_price_distribution(sample_category_stats):
-    distribution = sample_category_stats.price_distribution()
+    distribution = calc_sales_distribution(sample_category_stats)
 
-    assert len(distribution.index) == 11
-    assert 'bin' in list(distribution.columns)
-    assert 'sku' in list(distribution.columns)
-    assert 'turnover_month' in list(distribution.columns)
-    assert 'purchases_month' in list(distribution.columns)
+    assert len(distribution.df.index) == 11
+    assert 'bin' in list(distribution.df.columns)
+    assert 'sku' in list(distribution.df.columns)
+    assert 'turnover_month' in list(distribution.df.columns)
+    assert 'purchases_month' in list(distribution.df.columns)
