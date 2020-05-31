@@ -74,7 +74,7 @@ class CategoryStats(DataSet):
 
         return self
 
-    def top_goods(self, count=5):
+    def top_goods(self, count=5) -> pd.DataFrame:
         if 'turnover' not in list(self.df.columns):
             self.calculate_basic_stats()
 
@@ -84,10 +84,10 @@ class CategoryStats(DataSet):
 
         return df_slice.groupby(by='id').sum().sort_values(by=['turnover'], ascending=False).head(count)
 
-    def category_name(self):
+    def category_name(self) -> str:
         return self.df.loc[0, 'category_name'] if 'category_name' in self.df.columns else 'Неизвестная категория'
 
-    def category_url(self):
+    def category_url(self) -> str:
         return self.df.loc[0, 'category_url'] if 'category_url' in self.df.columns else '–'
 
 
@@ -99,7 +99,7 @@ class SalesDistributions(DataSet):
     fields_required = ('bin', 'sku', 'turnover_month', 'purchases_month')
 
 
-def calc_sales_distribution(stats: CategoryStats):
+def calc_sales_distribution(stats: CategoryStats) -> SalesDistributions:
     thresholds, labels = get_distribution_thresholds(stats.df.price)
 
     stats.df['bin'] = pd.cut(stats.df.price, thresholds, labels=labels, include_lowest=True)
@@ -110,5 +110,11 @@ def calc_sales_distribution(stats: CategoryStats):
     return SalesDistributions(data=data)
 
 
-def calc_hhi(stats: CategoryStats):
-    pass
+def calc_hhi(stats: CategoryStats, by='brand'):
+    total_market = stats.df.turnover_month.sum()
+
+    df_groups = stats.df.loc[:, [by, 'turnover_month']].groupby(by=by).sum()
+    df_groups['share'] = df_groups.turnover_month / total_market * 100
+    df_groups['sq_share'] = df_groups.share * df_groups.share
+
+    return df_groups.sq_share.sum()
