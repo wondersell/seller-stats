@@ -22,14 +22,12 @@ class CategoryStats(DataSet):
 
     fields_force_from_empty_string_to_nan = ('position', 'price', 'purchases', 'rating', 'reviews')
     fields_force_zeros_to_nan = ['reviews']
-    fields_drop_empty_strings = ('price', 'purchases')
-    fields_drop_na = ('position', 'price', 'purchases', 'rating', 'reviews')
     fields_force_types = {
-        'position': int,
-        'price': float,
-        'purchases': int,
-        'rating': float,
-        'reviews': int,
+        'position': 'float',
+        'price': 'float',
+        'purchases': 'float',
+        'rating': 'float',
+        'reviews': 'float',
     }
 
     def __init__(self, data):
@@ -73,16 +71,6 @@ class CategoryStats(DataSet):
         logger.info('Monthly stats calculated')
 
         return self
-
-    def top_goods(self, count=5) -> pd.DataFrame:
-        if 'turnover' not in list(self.df.columns):
-            self.calculate_basic_stats()
-
-        df_slice = self.df.loc[:, ['id', 'turnover']]
-
-        logger.info('Top goods calculated')
-
-        return df_slice.groupby(by='id').sum().sort_values(by=['turnover'], ascending=False).head(count)
 
     def category_name(self) -> str:
         return self.df.loc[0, 'category_name'] if 'category_name' in self.df.columns else 'Неизвестная категория'

@@ -50,6 +50,10 @@ class DataSet:
     def _clean_dataframe(self):
         len_raw = len(self.df.index)
 
+        # если уж найдем пустые значения, то изгоним их каленым железом (вместе со всей строкой, да)
+        for field in self.fields_drop_empty_strings:
+            self.df.drop(self.df[self.df[field] == ''].index, inplace=True)
+
         # делаем пустые значения действительно пустыми
         for field in self.fields_force_from_empty_string_to_nan:
             self.df[field].replace('', np.nan, inplace=True)
@@ -57,12 +61,10 @@ class DataSet:
         for field in self.fields_force_zeros_to_nan:
             self.df[field].replace(0, np.nan, inplace=True)
 
-        # если уж найдем пустые значения, то изгоним их каленым железом (вместе со всей строкой, да)
-        for field in self.fields_drop_empty_strings:
-            self.df.drop(self.df[self.df[field] == ''].index, inplace=True)
-
         self.df.dropna(subset=self.fields_drop_na, inplace=True)
-        self.df = self.df.astype(self.fields_force_types)
+
+        for field, field_type in self.fields_force_types.items():
+            self.df[field] = self.df[field].astype(field_type)
 
         len_clean = len(self.df.index)
 

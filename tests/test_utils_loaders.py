@@ -16,11 +16,11 @@ def test_simple_scrapinghub_loader_init_throws_exception():
     with pytest.raises(Exception) as e_info:
         ScrapinghubLoader(job_id='123/4/5')
 
-    assert 'Pass scrapinghub client or set SCRAPINGHUB_API_KEY env' in str(e_info)
+    assert 'Pass scrapinghub client or set SH_APIKEY env' in str(e_info)
 
 
 def test_simple_scrapinghub_loader_init_with_env_var():
-    environ['SCRAPINGHUB_API_KEY'] = 'dummy_scrapinghub_key'
+    environ['SH_APIKEY'] = 'dummy_scrapinghub_key'
     loader = ScrapinghubLoader(job_id='123/4/5')
 
     assert type(loader.client) is ScrapinghubClient

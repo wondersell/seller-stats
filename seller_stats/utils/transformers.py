@@ -47,6 +47,8 @@ class WildsearchCrawlerWildberriesTransformer(Transformer):
         'wb_category_url': 'category_url',
         'wb_category_name': 'category_name',
         'wb_brand_name': 'brand_name',
+        'wb_brand_url': 'brand_url',
+        'wb_brand_logo': 'brand_logo',
         'wb_brand_country': 'brand_country',
         'wb_manufacture_country': 'manufacture_country',
         'wb_first_review_date': 'first_review',

@@ -12,7 +12,10 @@ from seller_stats.utils.transformers import WildsearchCrawlerOzonTransformer, Wi
 @pytest.fixture()
 def sample_category_data(current_path):
     def _sample_category_data(mock='scrapinghub_items_wb_transformed', fieldnames=None):
-        return list(csv.DictReader(open(current_path + f'/mocks/{mock}.csv'), fieldnames=fieldnames))
+        data = list(csv.DictReader(open(current_path + f'/mocks/{mock}.csv')))
+
+        # оставляем только нужные поля, если передан список полей
+        return data if fieldnames is None else list(map(lambda row: {k: v for k, v in row.items() if k in fieldnames}, data))
 
     return _sample_category_data
 
@@ -72,7 +75,7 @@ def test_check_dataframe_correct_wb(sample_wb_category_data, caplog):
     stats = CategoryStats(data)
 
     assert len(caplog.records) == 0
-    assert len(stats.df.index) == 404
+    assert len(stats.df.index) == 440
 
 
 def test_category_stats_get_category_name_wb(sample_wb_category_data):
@@ -113,24 +116,10 @@ def test_calculate_monthly_stats(sample_category_data):
     assert stats.df.loc[0, ].days_since_first_review == 89.0
 
 
-def test_top_goods(sample_category_stats):
-    top = sample_category_stats.top_goods()
-
-    assert len(top.index) == 5
-    assert 'turnover' in list(top.columns)
-
-
-def test_top_goods_more(sample_category_stats):
-    top = sample_category_stats.top_goods(6)
-
-    assert len(top.index) == 6
-    assert 'turnover' in list(top.columns)
-
-
 def test_price_distribution(sample_category_stats):
     distribution = calc_sales_distribution(sample_category_stats)
 
-    assert len(distribution.df.index) == 12
+    assert len(distribution.df.index) == 6
     assert 'bin' in list(distribution.df.columns)
     assert 'sku' in list(distribution.df.columns)
     assert 'turnover_month' in list(distribution.df.columns)
@@ -138,7 +127,7 @@ def test_price_distribution(sample_category_stats):
 
 
 @pytest.mark.parametrize('sample_file, hhi_expected', [
-    ['hhi_sample_rand', 4054.5274397509374],
+    ['hhi_sample_rand', 4054.5274397509384],
     ['hhi_sample_monopoly', 10000],
     ['hhi_sample_olygopoly', 3333.3333333333326],
 ])
