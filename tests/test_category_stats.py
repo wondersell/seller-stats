@@ -127,7 +127,7 @@ def test_price_distribution(sample_category_stats):
 
 
 @pytest.mark.parametrize('sample_file, hhi_expected', [
-    ['hhi_sample_rand', 4054.5274397509384],
+    ['hhi_sample_rand', 4054.5274397509397],
     ['hhi_sample_monopoly', 10000],
     ['hhi_sample_olygopoly', 3333.3333333333326],
 ])
