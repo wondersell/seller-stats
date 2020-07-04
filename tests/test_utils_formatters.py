@@ -1,6 +1,7 @@
 import pytest
 
-from seller_stats.formatters import format_add_postfix, format_currency, format_number, format_percent, format_quantity
+from seller_stats.utils.formatters import (format_add_postfix, format_currency, format_number, format_percent,
+                                           format_quantity)
 
 
 @pytest.mark.parametrize('number, expected', [
