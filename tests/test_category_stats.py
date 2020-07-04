@@ -121,6 +121,7 @@ def test_price_distribution(sample_category_stats):
 
     assert len(distribution.df.index) == 6
     assert 'bin' in list(distribution.df.columns)
+    assert 'bin_labels' in list(distribution.df.columns)
     assert 'sku' in list(distribution.df.columns)
     assert 'turnover_month' in list(distribution.df.columns)
     assert 'purchases_month' in list(distribution.df.columns)
