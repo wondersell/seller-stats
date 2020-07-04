@@ -15,8 +15,8 @@ class DataSet:
     fields_force_types = {}
 
     def __init__(self, data):
-        self.df = pd.DataFrame
         self.meta = {}
+        self.df = pd.DataFrame(data=data)
 
         pd.set_option('display.precision', 2)
         pd.set_option('chop_threshold', 0.01)
@@ -29,11 +29,6 @@ class DataSet:
             'errors': [],
             'warnings': [],
         }
-
-        if isinstance(data, pd.DataFrame):
-            self.df = data
-        else:
-            self.df = pd.DataFrame(data=data)
 
         self._check_dataframe()
         self._clean_dataframe()

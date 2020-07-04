@@ -90,8 +90,9 @@ class SalesDistributions(DataSet):
 def calc_sales_distribution(stats: CategoryStats) -> SalesDistributions:
     thresholds, labels = get_distribution_thresholds(stats.df.price)
 
-    stats.df['bin'] = pd.cut(stats.df.price, thresholds, labels=labels, include_lowest=True)
+    stats.df['bin'] = pd.cut(stats.df.price, thresholds, include_lowest=True, right=False)
     data = stats.df.loc[:, ['bin', 'sku', 'turnover_month', 'purchases_month']].groupby(by='bin').sum().reset_index()
+    data['bin_labels'] = labels
 
     logger.info('Price distributions calculated')
 
