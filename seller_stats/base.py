@@ -30,7 +30,11 @@ class DataSet:
             'warnings': [],
         }
 
-        self.df = pd.DataFrame(data=data)
+        if isinstance(data, pd.DataFrame):
+            self.df = data
+        else:
+            self.df = pd.DataFrame(data=data)
+
         self._check_dataframe()
         self._clean_dataframe()
 
