@@ -137,4 +137,4 @@ def test_calc_hhi(sample_file, hhi_expected, sample_category_data):
 
     hhi = calc_hhi(stats=stats, by='brand')
 
-    assert hhi == hhi_expected
+    assert round(hhi) == round(hhi_expected)
