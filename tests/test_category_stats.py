@@ -5,9 +5,9 @@ import pytest
 from freezegun import freeze_time
 
 from seller_stats.category_stats import CategoryStats, calc_hhi, calc_sales_distribution
+from seller_stats.exceptions import BadDataSet
 from seller_stats.utils.loaders import ScrapinghubLoader
 from seller_stats.utils.transformers import WildsearchCrawlerOzonTransformer, WildsearchCrawlerWildberriesTransformer
-from seller_stats.exceptions import BadDataSet
 
 
 @pytest.fixture()

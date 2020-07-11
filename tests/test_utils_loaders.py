@@ -4,9 +4,9 @@ import pytest
 import requests_mock
 from scrapinghub import ScrapinghubClient
 
+from seller_stats.exceptions import NotReady
 from seller_stats.utils.loaders import CsvLoader, ScrapinghubLoader
 from seller_stats.utils.transformers import WildsearchCrawlerWildberriesTransformer
-from seller_stats.exceptions import NotReady
 
 
 @pytest.fixture()
@@ -47,7 +47,7 @@ def test_simple_scrapinghub_loader_load(set_scrapinghub_requests_mock, scrapingh
 
 def test_simple_scrapinghub_loader_job_not_finished(set_scrapinghub_requests_mock, scrapinghub_client):
     with requests_mock.Mocker() as m:
-        m.get(f'https://storage.scrapinghub.com/jobs/123/1/2/state', text='"running"')
+        m.get('https://storage.scrapinghub.com/jobs/123/1/2/state', text='"running"')
 
         with pytest.raises(NotReady) as error_info:
             ScrapinghubLoader(job_id='123/1/2', client=scrapinghub_client).load()
