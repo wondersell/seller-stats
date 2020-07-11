@@ -1,10 +1,12 @@
 from os import environ
 
 import pytest
+import requests_mock
 from scrapinghub import ScrapinghubClient
 
 from seller_stats.utils.loaders import CsvLoader, ScrapinghubLoader
 from seller_stats.utils.transformers import WildsearchCrawlerWildberriesTransformer
+from seller_stats.exceptions import NotReady
 
 
 @pytest.fixture()
@@ -12,7 +14,7 @@ def sample_csv_file_path(current_path):
     return current_path + '/mocks/scrapinghub_items_wb_raw.csv'
 
 
-def test_simple_scrapinghub_loader_init_throws_exception():
+def test_simple_scrapinghub_loader_init_throws_apikey_exception():
     with pytest.raises(Exception) as e_info:
         ScrapinghubLoader(job_id='123/4/5')
 
@@ -41,6 +43,16 @@ def test_simple_scrapinghub_loader_load(set_scrapinghub_requests_mock, scrapingh
     assert len(data) == 440
     assert 'product_name' in data[0].keys()
     assert 'wb_id' in data[0].keys()
+
+
+def test_simple_scrapinghub_loader_job_not_finished(set_scrapinghub_requests_mock, scrapinghub_client):
+    with requests_mock.Mocker() as m:
+        m.get(f'https://storage.scrapinghub.com/jobs/123/1/2/state', text='"running"')
+
+        with pytest.raises(NotReady) as error_info:
+            ScrapinghubLoader(job_id='123/1/2', client=scrapinghub_client).load()
+
+            assert 'not finished yet' in str(error_info)
 
 
 def test_scrapinghub_loader_with_transformer(set_scrapinghub_requests_mock, scrapinghub_client):

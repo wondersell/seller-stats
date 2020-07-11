@@ -4,6 +4,7 @@ from datetime import datetime
 import pandas as pd
 
 from .base import DataSet
+from .exceptions import BadDataSet
 from .utils.stats import get_distribution_thresholds
 
 logger = logging.getLogger(__name__)
@@ -32,6 +33,9 @@ class CategoryStats(DataSet):
 
     def __init__(self, data):
         super().__init__(data=data)
+
+        if len(self.df.index) < 1:
+            raise BadDataSet('Zero length datasets not allowed for CategoryStats')
 
         self.calculate_basic_stats()
         self.calculate_monthly_stats()

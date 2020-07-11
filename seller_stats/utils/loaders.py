@@ -5,6 +5,7 @@ from csv import DictReader
 from envparse import ConfigurationError, env
 from scrapinghub import ScrapinghubClient
 
+from ..exceptions import NotReady
 from .transformers import EmptyTransformer, Transformer
 
 logger = logging.getLogger(__name__)
@@ -26,13 +27,23 @@ class ScrapinghubLoader(Loader):
         try:
             self.client = client or ScrapinghubClient(env('SH_APIKEY'))
         except ConfigurationError:
-            raise ConfigurationError('Scrapinghub init failed. Pass scrapinghub client or set SH_APIKEY env.')
+            error_message = 'Scrapinghub init failed. Pass scrapinghub client or set SH_APIKEY env.'
+
+            logger.error(error_message)
+            raise ConfigurationError(error_message)
 
         logger.info(f'Loading items from scrapinghub job {job_id}')
 
         super().__init__(transformer=transformer)
 
     def load(self):
+        if self.client.get_job(self.job_id).metadata.get('state') != 'finished':
+            error_message = f'Job {self.job_id} is not finished yet'
+
+            logger.error(error_message)
+
+            raise NotReady(error_message)
+
         items = [self.transformer.transform_item(item) for item in self.client.get_job(self.job_id).items.iter()]
 
         logger.info(f'Loaded {len(items)} items from scrapinghub')

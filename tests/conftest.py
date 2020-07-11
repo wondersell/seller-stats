@@ -27,7 +27,7 @@ def scrapinghub_client():
 
 @pytest.fixture()
 def sample_category_data_raw(current_path):
-    return open(current_path + '/mocks/scrapinghub_items_wb_raw.jl', 'rb').read()
+    return open(current_path + '/mocks/scrapinghub_items_wb_raw.json', 'rb').read()
 
 
 @pytest.fixture()
@@ -41,5 +41,6 @@ def set_scrapinghub_requests_mock(requests_mock, sample_category_data_raw):
         requests_mock.get('https://storage.scrapinghub.com/jobq/414324/count?state=running&spider=wb', text=f'{running_count}')
         requests_mock.post('https://app.scrapinghub.com/api/run.json', json={'status': 'ok', 'jobid': f'{job_id}'})
         requests_mock.get(f'https://storage.scrapinghub.com/items/{job_id}?meta=_key', content=load_content, headers={'Content-Type': 'application/x-jsonlines; charset=UTF-8'})
+        requests_mock.get(f'https://storage.scrapinghub.com/jobs/{job_id}/state', text='"finished"')
 
     return _set_scrapinghub_requests_mock

@@ -7,6 +7,7 @@ from freezegun import freeze_time
 from seller_stats.category_stats import CategoryStats, calc_hhi, calc_sales_distribution
 from seller_stats.utils.loaders import ScrapinghubLoader
 from seller_stats.utils.transformers import WildsearchCrawlerOzonTransformer, WildsearchCrawlerWildberriesTransformer
+from seller_stats.exceptions import BadDataSet
 
 
 @pytest.fixture()
@@ -23,7 +24,7 @@ def sample_category_data(current_path):
 @pytest.fixture()
 def sample_wb_category_data(set_scrapinghub_requests_mock, current_path, scrapinghub_client):
     def _sample_category_data(mock='scrapinghub_items_wb_raw'):
-        set_scrapinghub_requests_mock(job_id='414324/1/735', load_content=open(current_path + f'/mocks/{mock}.jl', 'rb').read())
+        set_scrapinghub_requests_mock(job_id='414324/1/735', load_content=open(current_path + f'/mocks/{mock}.json', 'rb').read())
 
         transformer = WildsearchCrawlerWildberriesTransformer()
         loader = ScrapinghubLoader(job_id='414324/1/735', client=scrapinghub_client, transformer=transformer)
@@ -36,7 +37,7 @@ def sample_wb_category_data(set_scrapinghub_requests_mock, current_path, scrapin
 @pytest.fixture()
 def sample_ozon_category_data(set_scrapinghub_requests_mock, current_path, scrapinghub_client):
     def _sample_category_data(mock='scrapinghub_items_ozon_raw'):
-        set_scrapinghub_requests_mock(job_id='414324/1/735', load_content=open(current_path + f'/mocks/{mock}.jl', 'rb').read())
+        set_scrapinghub_requests_mock(job_id='414324/1/735', load_content=open(current_path + f'/mocks/{mock}.json', 'rb').read())
 
         transformer = WildsearchCrawlerOzonTransformer()
         loader = ScrapinghubLoader(job_id='414324/1/735', client=scrapinghub_client, transformer=transformer)
@@ -76,6 +77,13 @@ def test_check_dataframe_correct_wb(sample_wb_category_data, caplog):
 
     assert len(caplog.records) == 0
     assert len(stats.df.index) == 440
+
+
+def test_category_stats_empty():
+    with pytest.raises(BadDataSet) as error_info:
+        CategoryStats(data=[])
+
+        assert 'Zero length datasets' in str(error_info)
 
 
 def test_category_stats_get_category_name_wb(sample_wb_category_data):
