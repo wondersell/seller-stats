@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='seller-stats',
-    version='0.3.0',
+    version='0.3.1',
     author='Artem Kiselev',
     author_email='artem.kiselev@gmail.com',
     description='Various statistics for marketplace sellers',
