@@ -42,7 +42,9 @@ class CategoryStats(DataSet):
 
     def calculate_basic_stats(self):
         self.df['sku'] = 1
-        self.df['turnover'] = self.df['price'] * self.df['purchases']
+
+        if 'turnover' not in list(self.df.columns):
+            self.df['turnover'] = self.df['price'] * self.df['purchases']
 
         logger.info('Basic stats calculated')
 

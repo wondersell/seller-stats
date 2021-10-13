@@ -69,3 +69,24 @@ class WildsearchCrawlerOzonTransformer(Transformer):
         'product_name': 'name',
         'product_url': 'url',
     }
+
+
+class MpstatsWildbserriesTransformer(Transformer):
+    transform_rules = {
+        'id': 'id',
+        'url': 'url',
+        'name': 'name',
+        'final_price': 'price',
+        'category_position': 'position',
+        'sales': 'purchases',
+        'rating': 'rating',
+        'comments': 'reviews',
+        #'wb_category_url': 'category_url',
+        'category': 'category_name',
+        'brand': 'brand_name',
+        #'wb_brand_url': 'brand_url',
+        #'wb_brand_logo': 'brand_logo',
+        #'wb_brand_country': 'brand_country',
+        #'wb_manufacture_country': 'manufacture_country',
+        #'wb_first_review_date': 'first_review',
+    }
